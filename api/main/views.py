@@ -99,11 +99,13 @@ class OrderView(View):
                 ticket = models.OrderTicket.objects.create(order=order)
                 
                 for item in items_data:
-                    # item verilerine ticket verisi inject edilir
-                    item.update({"ticket": ticket.pk})
                     form = forms.CreateOrderItemForm(data=item)
                     if form.is_valid():
-                        form.save()
+                        order_item = form.save(commit=False)
+
+                        order_item.ticket = ticket
+
+                        order_item.save()
                     else:
                         return ApiResponse(
                             message=service.get_first_error_message(form),

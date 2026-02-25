@@ -26,7 +26,6 @@ class CreateOrderItemForm(forms.ModelForm):
             "order",
             "product",
             "quantity",
-            "ticket"
         )
     
     def save(self, commit=True):

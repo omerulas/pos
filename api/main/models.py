@@ -209,9 +209,16 @@ class Order(AppBaseModel):
     def get_items(self):
         return self.order_items.all()
     
+    def get_tickets(self):
+        return self.order_tickets.all()
+    
     @property
     def items(self):
         return [item.serialize() for item in self.get_items()]
+    
+    @property
+    def tickets(self):
+        return [ticket.serialize() for ticket in self.get_tickets()]
     
     @property
     def amount(self):
@@ -223,6 +230,7 @@ class Order(AppBaseModel):
             "id": self.pk,
             "is_open": self.is_open,
             "items": self.items,
+            "tickets": self.tickets,
             "amount": self.amount
         }
 
@@ -236,6 +244,19 @@ class OrderTicket(AppBaseModel):
     class Meta:
         verbose_name = "Sipariş İstemi"
         verbose_name_plural = "Sipariş İstemleri"
+
+    def get_items(self):
+        return self.ticket_items.all()
+    
+    @property
+    def items(self):
+        return [item.serialize() for item in self.get_items()]
+    
+    def serialize(self):
+        return {
+            "id": self.pk,
+            "items": self.items
+        }
 
 class OrderItem(AppBaseModel):
     order = models.ForeignKey(
