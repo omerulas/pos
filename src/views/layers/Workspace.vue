@@ -4,9 +4,10 @@ import BrandButton from '@/component/buttons/BrandButton.vue';
 import CheckInButton from '@/component/buttons/CheckInButton.vue';
 import CheckOutButton from '@/component/buttons/CheckOutButton.vue';
 import ConnectionStatus from '@/component/buttons/ConnectionStatus.vue';
-import EditButton from '@/component/buttons/EditButton.vue';
+import EnterOrder from '@/component/buttons/EnterOrder.vue';
 import FullScreenButton from '@/component/buttons/FullScreenButton.vue';
 import LogOutButton from '@/component/buttons/LogOutButton.vue';
+import OrderHistory from '@/component/buttons/OrderHistory.vue';
 import PrintBillButton from '@/component/buttons/PrintBillButton.vue';
 import SyncButton from '@/component/buttons/SyncButton.vue';
 import TableButton from '@/component/buttons/TableButton.vue';
@@ -20,9 +21,10 @@ import TableButton from '@/component/buttons/TableButton.vue';
             <TableButton />
         </div>
         <div style="display: flex; gap: 0.25rem">
-            <PrintBillButton />
             <CheckInButton />
-            <EditButton />
+            <PrintBillButton />
+            <EnterOrder />
+            <OrderHistory />
             <CheckOutButton />
             <FullScreenButton />
             <SyncButton />

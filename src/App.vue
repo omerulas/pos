@@ -36,6 +36,7 @@ td {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem
+  gap: 0.5rem;
+  height: 2.5rem;
 }
 </style>

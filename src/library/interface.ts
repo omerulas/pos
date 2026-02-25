@@ -23,20 +23,28 @@ export interface Store {
   name: string;
   slug: string;
   tables: Table[];
-  categories: Category[]
+  categories: Category[];
 }
 
-export interface Product{
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface CartItem {
+  id: string;
+  order: string;
+  product: string;
+  name: string;
+  quantity: number;
+}
+
+export interface Category {
   id: string;
   name: string;
   slug: string;
-}
-
-export interface Category{
-  id: string;
-  name: string;
-  slug: string;
-  products: Product[]
+  products: Product[];
 }
 
 export interface Table {
@@ -46,20 +54,15 @@ export interface Table {
 
 export interface Item {
   id: string;
-  product: string;
-  quantity: number,
+  name: string;
+  quantity: number;
   unit_price: number;
-  amount: number
+  amount: number;
 }
 
 export interface Order {
-    id: string;
-    status: string;
-    is_printed: boolean;
-    created_at: string;
-    updated_at: string;
-    closed_at: string;
-    table: Table;
-    items: Item[],
-    total: number;
-  }
+  id: string;
+  is_open: boolean;
+  items: Item[];
+  amount: number;
+}

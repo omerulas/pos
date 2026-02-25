@@ -3,8 +3,9 @@ import { initialStore } from "@/library/initials";
 import type { LoginCredentials, Response, Store } from "@/library/interface";
 import { urls } from "@/library/urls";
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useOrderData } from "./order";
 
 export const useProcess = defineStore("Process", () => {
   // --- Stores ---
@@ -22,6 +23,7 @@ export const useProcess = defineStore("Process", () => {
     isChecked.value = true;
     isAuthenticated.value = response.data.is_authenticated;
     store.value = response.data.store;
+    console.log(store.value)
   }
 
   async function check() {

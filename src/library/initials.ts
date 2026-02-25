@@ -1,4 +1,10 @@
-import type { Category, LoginCredentials, Order, Store } from "./interface";
+import type {
+  CartItem,
+  Category,
+  LoginCredentials,
+  Order,
+  Store,
+} from "./interface";
 
 export const initialCredentials: LoginCredentials = {
   username: "UlasO",
@@ -22,15 +28,7 @@ export const initialStore: Store = {
 
 export const initialOrder: Order = {
   id: "",
-  status: "OPEN",
-  is_printed: false,
-  created_at: "",
-  updated_at: "",
-  closed_at: "",
-  table: {
-    id: "",
-    name: "",
-  },
+  is_open: false,
   items: [],
-  total: 0.00
+  amount: 0.0,
 };

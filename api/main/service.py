@@ -72,8 +72,8 @@ class Service:
         form = model_form(data=data)
         vn = self.get_vn(model_form._meta.model)
         if form.is_valid():
-            form.save()
-            return {"message": f"{vn} kaydedildi"}
+            obj = form.save()
+            return (f"{vn} kaydedildi", obj)
         print(form.errors)
         return {"error": self.get_first_error_message(form)}
     
