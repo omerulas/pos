@@ -20,40 +20,53 @@ onUnmounted(order.reset)
     <section>
         <div>
             <div style="margin-bottom: 1rem;" v-if="$order.showOrderHistory">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <h2 style="padding: 0; margin: 0;">Sipariş Geçmişi</h2>
-                    <div style="display: flex; gap: 0.25rem">
-                        <CancelButton />
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h2 style="padding: 0.3rem 0; margin: 0;">
+                        Sipariş Geçmişi
+                    </h2>
                 </div>
                 <div>
-                    <table>
+                    <table v-for="ticket in $order.obj.tickets" style="margin-bottom: 1rem;">
                         <thead>
                             <tr>
-                                <th style="text-align: center; width: 1rem;">#</th>
-                                <th>Ürün</th>
-                                <th style="text-align: center; width: 8rem;">Adet</th>
+                                <th>Sipariş ID</th>
+                                <th style="text-align: center;">Durum</th>
+                                <th style="width: 5rem; text-align: center;">Eylem</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-if="$order.cart.length > 0" v-for="(item, index) in $order.cart">
-                                <td>{{ index + 1 }}</td>
-                                <td>{{ item.name }}</td>
+                            <tr>
                                 <td>
-                                    <div
-                                        style="display: flex; justify-content: start; gap: 0.25rem; flex: 0 0 auto; min-width: 0; flex-grow: 0;">
-                                        <DecreaseButton :item-id="item.id" />
-                                        <input style="width: 1.5rem; padding: 0.5rem 0 0.5rem 0.5rem;" type="number"
-                                            v-model="item.quantity" disabled>
-                                        <IncreaseButton :item-id="item.id" />
-                                        <RemoveButton :item-id="item.id" />
-                                    </div>
+                                    <strong>{{ ticket.id }}</strong>
+                                </td>
+                                <td style="text-align: center;">
+                                    {{ ticket.is_canceled ? 'İptal' : 'Aktif' }}
+                                </td>
+                                <td>
+                                    <CancelButton :ticket-id="ticket.id" />
                                 </td>
                             </tr>
-                            <tr v-else>
-                                <td colspan="3" style="text-align: center; padding: 1.2rem">
-                                    Bu hesap için herhangi bir sipariş girilmemiş
+                            <tr>
+                                <td colspan="99">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 1.5rem; text-align: center;">#</th>
+                                                <th>Ürün</th>
+                                                <th style="width: 3rem;">Miktar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(item, index) in ticket.items">
+                                                <td style="text-align: center;">{{ index + 1 }}</td>
+                                                <td>{{ item.name }}</td>
+                                                <td>
+                                                    <input style="width: 1.5rem; padding: 0.5rem 0 0.5rem 0.5rem;"
+                                                        type="number" v-model="item.quantity" disabled>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </td>
                             </tr>
                         </tbody>
@@ -65,7 +78,7 @@ onUnmounted(order.reset)
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                     <h2 style="padding: 0; margin: 0;">Girilen Sipariş</h2>
                     <div style="display: flex; gap: 0.25rem">
-                        <EmptyCart :disabled="$order.obj.id == '' || $order.cart.length == 0"/>
+                        <EmptyCart :disabled="$order.obj.id == '' || $order.cart.length == 0" />
                         <SaveButton :disabled="$order.obj.id == '' || $order.cart.length == 0"></SaveButton>
                     </div>
                 </div>
@@ -145,7 +158,8 @@ onUnmounted(order.reset)
         </div>
         <aside>
             <div style="height: 2.5rem; display: flex; gap: 0.25rem; margin-bottom: 0.25rem;">
-                <button :disabled="!$order.canEnterOrder" v-for="category in $process.store.categories" @click="$order.changeCategoryId(category.id)">
+                <button :disabled="!$order.canEnterOrder" v-for="category in $process.store.categories"
+                    @click="$order.changeCategoryId(category.id)">
                     {{ category.name }}
                 </button>
             </div>

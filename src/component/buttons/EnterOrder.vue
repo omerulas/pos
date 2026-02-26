@@ -1,5 +1,5 @@
 <template>
-    <button @click="$order.canEnterOrder = true" :disabled="$order.obj.id == '' || $order.canEnterOrder" class="actionButton">
+    <button @click="$order.canEnterOrder = !$order.canEnterOrder" :disabled="$order.obj.id == ''" class="actionButton">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-pencil-square"
             viewBox="0 0 16 16">
             <path

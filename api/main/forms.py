@@ -27,26 +27,6 @@ class CreateOrderItemForm(forms.ModelForm):
             "product",
             "quantity",
         )
-    
-    def save(self, commit=True):
-        order = self.cleaned_data.get('order')
-        product = self.cleaned_data.get('product')
-        quantity = self.cleaned_data.get('quantity')
-
-        with transaction.atomic():
-            order_item, created = models.OrderItem.objects.get_or_create(
-                order=order,
-                product=product,
-                defaults={'quantity': quantity}
-            )
-
-            if not created:
-                order_item.quantity += quantity
-                
-                if commit:
-                    order_item.save()
-
-        return order_item
 
 class CreateOrderTicketForm(forms.ModelForm):
     class Meta:

@@ -207,7 +207,7 @@ class Order(AppBaseModel):
         unique_together = ('table', "is_open")
 
     def get_items(self):
-        return self.order_items.all()
+        return self.order_items.filter(is_canceled=False)
     
     def get_tickets(self):
         return self.order_tickets.all()
@@ -225,11 +225,28 @@ class Order(AppBaseModel):
         items = self.get_items()
         return sum([item.amount for item in items])
     
+    @property
+    def grouped(self):
+        item_set = {}
+        
+        for item in self.get_items():
+
+            product_id = item.product.id
+
+            if product_id in item_set:
+                item_set[product_id]["quantity"] += item.quantity
+                item_set[product_id]["amount"] += item.amount
+            else:
+                item_data = item.serialize()
+                item_set[product_id] = item_data
+        
+        return list(item_set.values())
+    
     def serialize(self):
         return {
             "id": self.pk,
             "is_open": self.is_open,
-            "items": self.items,
+            "items": self.grouped,
             "tickets": self.tickets,
             "amount": self.amount
         }
@@ -240,6 +257,8 @@ class OrderTicket(AppBaseModel):
         on_delete=models.CASCADE,
         related_name='order_tickets',
     )
+
+    is_canceled = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Sipariş İstemi"
@@ -255,8 +274,18 @@ class OrderTicket(AppBaseModel):
     def serialize(self):
         return {
             "id": self.pk,
+            "is_canceled": self.is_canceled,
             "items": self.items
         }
+    
+    def cancel_ticket(self):
+        self.is_canceled = True
+        self.save()
+
+        items = self.get_items()
+        for item in items:
+            item.is_canceled = True
+            item.save()
 
 class OrderItem(AppBaseModel):
     order = models.ForeignKey(
@@ -279,9 +308,11 @@ class OrderItem(AppBaseModel):
         null=True
     )
 
+    is_canceled = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Sipariş Kalemi"
-        verbose_name = "Sipariş Kalemleri"
+        verbose_name_plural = "Sipariş Kalemleri"
 
     @property
     def amount(self):
@@ -289,7 +320,6 @@ class OrderItem(AppBaseModel):
 
     def serialize(self):
         return {
-            "id": self.id,
             "name": self.product.name,
             "quantity": self.quantity,
             "unit_price": self.product.price,

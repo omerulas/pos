@@ -63,22 +63,6 @@ class OrderView(View):
         order, _ = models.Order.objects.get_or_create(table=table)
         return ApiResponse(data=order.serialize())
 
-    # def put(self, request):
-    #     data = service.data(request=request)
-    #     ticket_data = {"order": data["order"]}
-    #     msg, ticket = service.save(forms.CreateOrderTicketForm, ticket_data)
-    #     print(msg, ticket)
-    #     for item in data["items"]:
-    #         print(item)
-    #         item.update({"ticket": ticket.id})
-    #         print(item)
-    #         result = service.save(forms.CreateOrderItemForm, item)
-    #         error = result.get("error", None)
-    #         if error is not None:
-    #             return ApiResponse(message=error, status=400)
-    #     order = models.Order.objects.get(id=data["order"])
-    #     return ApiResponse(data=order.serialize())
-
     def put(self, request):
         try:
             data = json.loads(request.body)
@@ -98,20 +82,28 @@ class OrderView(View):
                 
                 ticket = models.OrderTicket.objects.create(order=order)
                 
+                item_instances = []
                 for item in items_data:
+                    # item verilerine ticket verisi inject edilir
+                    item.update({"ticket": ticket.pk})
+
                     form = forms.CreateOrderItemForm(data=item)
                     if form.is_valid():
-                        order_item = form.save(commit=False)
-
-                        order_item.ticket = ticket
-
-                        order_item.save()
+                        valid_data = form.cleaned_data
+                        new_item = models.OrderItem(
+                            order=order,
+                            product=valid_data['product'],
+                            quantity=valid_data['quantity'],
+                            ticket=ticket
+                        )
+                        item_instances.append(new_item)
                     else:
                         return ApiResponse(
                             message=service.get_first_error_message(form),
                             status=400
                         )
-                    
+                if item_instances:
+                    models.OrderItem.objects.bulk_create(item_instances)
                 # gelen verideki tum siparis kalemlerini olusturdugunda
                 # order verilerini doner
                 return ApiResponse(data=order.serialize())
@@ -122,3 +114,13 @@ class OrderView(View):
         except Exception as error:
             print("Sistem hatası: ", str(error))
             return ApiResponse(message=str(error), status=500)
+    
+class TicketView(View):
+
+    def delete(self, request, ticket_id):
+        try:
+            ticket = models.OrderTicket.objects.get(id=ticket_id)
+            ticket.cancel_ticket()
+            return ApiResponse(data=ticket.order.serialize())
+        except models.OrderTicket.DoesNotExist:
+            return ApiResponse(status=400)

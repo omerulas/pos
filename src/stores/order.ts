@@ -125,6 +125,19 @@ export const useOrderData = defineStore("Order", () => {
     }
   }
 
+  async function cancelTicket(ticketId: string) {
+    const conf = window.confirm("Tüm istem iptal edilecek")
+
+    if(conf){
+      console.log(ticketId)
+      const response = await api.delete(url({path: `ticket/${ticketId}`}))
+
+      if(response.status == 200) {
+        obj.value = response.data
+      }
+    }
+  }
+
   function reset() {
     obj.value = { ...initialOrder };
     selectedCategoryId.value = "";
@@ -149,6 +162,7 @@ export const useOrderData = defineStore("Order", () => {
     decreaseQuantity,
     removeItem,
     saveOrder,
+    cancelTicket,
     reset,
   };
 });

@@ -23,5 +23,6 @@ export const urls = {
     logout: url({ path: 'auth/logout' }),
     login: url({ path: 'auth/login' }),
     order: url({ path: 'order' }),
-    item: url({path: 'item'})
+    item: url({path: 'item'}),
+    ticket: url({path: 'ticket'}),
 }

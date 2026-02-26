@@ -56,3 +56,7 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(models.OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("id", "order", "product")
+
+@admin.register(models.OrderTicket)
+class OrderTicketAdmin(admin.ModelAdmin):
+    list_display = ("id",)

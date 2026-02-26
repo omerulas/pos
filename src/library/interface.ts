@@ -60,9 +60,16 @@ export interface Item {
   amount: number;
 }
 
+export interface Ticket {
+  id: string;
+  is_canceled: boolean;
+  items: Item[]
+}
+
 export interface Order {
   id: string;
   is_open: boolean;
   items: Item[];
   amount: number;
+  tickets: Ticket[]
 }
