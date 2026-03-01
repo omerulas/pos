@@ -92,7 +92,8 @@ class UserStore(AppBaseModel):
     store = models.ForeignKey(
         to=Store,
         on_delete=models.CASCADE,
-        related_name='users'
+        related_name='users',
+        db_index=True
     )
     
     class Meta:
@@ -106,7 +107,8 @@ class Table(AppBaseModel):
     store = models.ForeignKey(
         to=Store,
         on_delete=models.CASCADE,
-        related_name='store_tables'
+        related_name='store_tables',
+        db_index=True
     )
 
     name = models.CharField(max_length=125)
@@ -128,7 +130,8 @@ class Category(AppBaseModel):
     store = models.ForeignKey(
         to=Store,
         on_delete=models.CASCADE,
-        related_name='store_categories'
+        related_name='store_categories',
+        db_index=True
     )
     
     name = models.CharField(max_length=125)
@@ -158,7 +161,8 @@ class Product(AppBaseModel):
     category = models.ForeignKey(
         to=Category,
         on_delete=models.CASCADE,
-        related_name='product_category'
+        related_name='product_category',
+        db_index=True
     )
 
     name = models.CharField(max_length=125)
@@ -196,7 +200,8 @@ class Order(AppBaseModel):
         on_delete=models.SET_NULL,
         null=True,
         related_name='table_orders',
-        verbose_name='Masa'
+        verbose_name='Masa',
+        db_index=True
     )
 
     is_open = models.BooleanField(verbose_name='Açık Sipariş', default=True)
@@ -206,40 +211,86 @@ class Order(AppBaseModel):
         verbose_name_plural = "Siparişler"
         unique_together = ('table', "is_open")
 
-    def get_items(self):
-        return self.order_items.filter(is_canceled=False)
-    
     def get_tickets(self):
+        """
+        Siparişe ait tüm ticketları object olarak doner
+        """
         return self.order_tickets.all()
+    
+    def get_active_tickets(self):
+        """
+        Siparişe ait tüm aktif ticketları object olarak doner
+        """
+        return self.order_tickets.filter(is_canceled=False)
+    
+    def get_items(self):
+        """
+        Siparişe ait aktif ticketların içindeki tüm kalemleri tek sorguda döner.
+        """
+        # Aktif ticketları alıyoruz (QuerySet olarak döner)
+        active_tickets = self.get_active_tickets()
+        
+        # OrderItem modeline gidip, 'ticket' alanı bu aktif ticketlardan 
+        # biri olanları filtreleyip getiriyoruz.
+        return self.order_items.filter(ticket__in=active_tickets)
     
     @property
     def items(self):
+        """
+        Siparişe ait tüm aktif ticketları object olarak doner
+        Bu ticketlara ait itemlar üzerinde doner
+        Itemların serialize edilmiş haliyle bir liste doner
+        """
         return [item.serialize() for item in self.get_items()]
     
     @property
     def tickets(self):
+        """
+        Siparişe ait tüm ticketları object olarak doner
+        Ticketların serialize edilmiş haliyle bir liste doner
+        """
         return [ticket.serialize() for ticket in self.get_tickets()]
     
     @property
     def amount(self):
+        """
+        Siparişe ait tüm aktif ticketları object olarak doner
+        Bu ticketlara ait itemlar üzerinde doner
+        Itemların tutarlarını toplayıp sayı doner
+        """
         items = self.get_items()
+
+        # Tutarları toplayıp sayı doner
         return sum([item.amount for item in items])
     
     @property
     def grouped(self):
+        """
+        Bir siparişe aynı üründen birden fazla kalem
+        ürün girilmiş olabilir
+        Siparişe ait tüm aktif ticketları object olarak doner
+        Bu aynı ürün kalemlerinin miktarını derleyip
+        liste şeklinde doner
+        """
+        # item_set List[product_id: dict] seklindedir
         item_set = {}
         
         for item in self.get_items():
-
+            """
+            Aktif ticketlar üzerinden itemlara ulaşır
+            """
             product_id = item.product.id
 
             if product_id in item_set:
+                # Eger bu urun listedeyse miktar ve tutarı guncelle
                 item_set[product_id]["quantity"] += item.quantity
                 item_set[product_id]["amount"] += item.amount
             else:
+                # Degilse serialize edilmis halini listeye ekle
                 item_data = item.serialize()
                 item_set[product_id] = item_data
         
+        # product_id alanını atarak sadece dict listesini doner
         return list(item_set.values())
     
     def serialize(self):
@@ -248,7 +299,7 @@ class Order(AppBaseModel):
             "is_open": self.is_open,
             "items": self.grouped,
             "tickets": self.tickets,
-            "amount": self.amount
+            "amount": self.amount,
         }
 
 class OrderTicket(AppBaseModel):
@@ -256,6 +307,7 @@ class OrderTicket(AppBaseModel):
         to=Order,
         on_delete=models.CASCADE,
         related_name='order_tickets',
+        db_index=True
     )
 
     is_canceled = models.BooleanField(default=False)
@@ -281,17 +333,14 @@ class OrderTicket(AppBaseModel):
     def cancel_ticket(self):
         self.is_canceled = True
         self.save()
-
-        items = self.get_items()
-        for item in items:
-            item.is_canceled = True
-            item.save()
+        return self.order.serialize()
 
 class OrderItem(AppBaseModel):
     order = models.ForeignKey(
         to=Order,
         on_delete=models.CASCADE,
-        related_name='order_items'
+        related_name='order_items',
+        db_index=True
     )
 
     product = models.ForeignKey(
@@ -307,8 +356,6 @@ class OrderItem(AppBaseModel):
         related_name="ticket_items",
         null=True
     )
-
-    is_canceled = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Sipariş Kalemi"

@@ -43,7 +43,7 @@ onUnmounted(order.reset)
                                     {{ ticket.is_canceled ? 'İptal' : 'Aktif' }}
                                 </td>
                                 <td>
-                                    <CancelButton :ticket-id="ticket.id" />
+                                    <CancelButton :disabled="ticket.is_canceled" :ticket-id="ticket.id" />
                                 </td>
                             </tr>
                             <tr>

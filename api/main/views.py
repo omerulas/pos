@@ -120,7 +120,7 @@ class TicketView(View):
     def delete(self, request, ticket_id):
         try:
             ticket = models.OrderTicket.objects.get(id=ticket_id)
-            ticket.cancel_ticket()
-            return ApiResponse(data=ticket.order.serialize())
+            data = ticket.cancel_ticket()
+            return ApiResponse(data=data)
         except models.OrderTicket.DoesNotExist:
             return ApiResponse(status=400)

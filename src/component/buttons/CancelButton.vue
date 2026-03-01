@@ -1,8 +1,8 @@
 <script setup lang="ts">
-const {ticketId} = defineProps<{ticketId: string}>()
+const {ticketId, disabled} = defineProps<{ticketId: string; disabled: boolean}>()
 </script>
 <template>
-    <button @click="$order.cancelTicket(ticketId)" class="actionButton">
+    <button :disabled="disabled" @click="$order.cancelTicket(ticketId)" class="actionButton">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x-octagon"
             viewBox="0 0 16 16">
             <path
