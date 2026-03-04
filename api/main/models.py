@@ -1,5 +1,6 @@
 from uuid import uuid4
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin
@@ -216,8 +217,14 @@ class Order(AppBaseModel):
     class Meta:
         verbose_name = "Sipariş"
         verbose_name_plural = "Siparişler"
-        unique_together = ('table', "is_open")
-    
+        
+        constraints = [
+            models.UniqueConstraint(
+                fields=['table'],
+                condition=Q(is_open=True),
+                name='unique_open_order_per_table'
+            )
+        ]
     
     def serialize(self):
         return {
