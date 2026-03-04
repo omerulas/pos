@@ -50,6 +50,7 @@ export interface Category {
 export interface Table {
   id: string;
   name: string;
+  available: boolean;
 }
 
 export interface Item {

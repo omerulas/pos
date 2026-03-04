@@ -23,7 +23,6 @@ export const useProcess = defineStore("Process", () => {
     isChecked.value = true;
     isAuthenticated.value = response.data.is_authenticated;
     store.value = response.data.store;
-    console.log(store.value)
   }
 
   async function check() {

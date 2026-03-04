@@ -1,13 +1,9 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
     <div>
         <button @click="$router.push({
             name: 'table',
             params: { id: table.id }
-        })" v-for="table in $process.store.tables">
+        })" v-for="table in $process.store.tables" :style="!table.available ? 'background-color: coral;' : ''">
             {{ table.name }}
         </button>
     </div>

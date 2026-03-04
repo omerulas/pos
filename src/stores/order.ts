@@ -65,6 +65,9 @@ export const useOrderData = defineStore("Order", () => {
 
     if (response.status == 200) {
       obj.value = response.data;
+      if (table.value) {
+        table.value.available = false;
+      }
     }
   }
 
@@ -170,6 +173,9 @@ export const useOrderData = defineStore("Order", () => {
 
     if (response.status == 200) {
       reset();
+      if (table.value) {
+        table.value.available = true;
+      }
     }
   }
 

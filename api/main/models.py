@@ -119,11 +119,16 @@ class Table(AppBaseModel):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def available(self):
+        return not self.table_orders.filter(is_open=True).exists()
 
     def serialize(self):
         return {
             "id": self.pk,
             "name": self.name,
+            "available": self.available
         }
 
 class Category(AppBaseModel):
