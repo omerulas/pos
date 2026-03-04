@@ -2,7 +2,7 @@
 
 </script>
 <template>
-    <button @click="$order.showOrderHistory = !$order.showOrderHistory" class="actionButton">
+    <button :disabled="$order.obj.id == '' || $order.obj.tickets.length == 0" @click="$order.showOrderHistory = !$order.showOrderHistory" class="actionButton">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-clock-history"
             viewBox="0 0 16 16">
             <path

@@ -205,11 +205,24 @@ class Order(AppBaseModel):
     )
 
     is_open = models.BooleanField(verbose_name='Açık Sipariş', default=True)
+    
+    is_printed = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Sipariş"
         verbose_name_plural = "Siparişler"
         unique_together = ('table', "is_open")
+    
+    
+    def serialize(self):
+        return {
+            "id": self.pk,
+            "is_open": self.is_open,
+            "items": self.grouped,
+            "tickets": self.tickets,
+            "amount": self.amount,
+            "is_printed": self.is_printed,
+        }
 
     def get_tickets(self):
         """
@@ -292,15 +305,6 @@ class Order(AppBaseModel):
         
         # product_id alanını atarak sadece dict listesini doner
         return list(item_set.values())
-    
-    def serialize(self):
-        return {
-            "id": self.pk,
-            "is_open": self.is_open,
-            "items": self.grouped,
-            "tickets": self.tickets,
-            "amount": self.amount,
-        }
 
 class OrderTicket(AppBaseModel):
     order = models.ForeignKey(

@@ -13,11 +13,30 @@ class CustomUserChangeForm(UserChangeForm):
         model = models.User
         fields = ('username', 'is_active', 'is_staff')
 
-class CreateOrderForm(forms.ModelForm):
-
+class CheckInOrderForm(forms.ModelForm):
+    
     class Meta:
         model = models.Order
         fields = ("table",)
+        
+class PrintOrderReceiptForm(forms.ModelForm):
+    class Meta:
+        model = models.Order
+        fields = ("is_printed",)
+    
+class CheckOutOrderForm(forms.ModelForm):
+    
+    class Meta:
+        model = models.Order
+        fields = ("is_open",)
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        if self.instance and not self.instance.is_printed:
+            raise forms.ValidationError("Hesap yazdırılmamış")
+        
+        return cleaned_data
 
 class CreateOrderItemForm(forms.ModelForm):
     class Meta:
@@ -27,8 +46,8 @@ class CreateOrderItemForm(forms.ModelForm):
             "product",
             "quantity",
         )
-
-class CreateOrderTicketForm(forms.ModelForm):
+        
+class CancelOrderTicketForm(forms.ModelForm):
     class Meta:
         model = models.OrderTicket
-        fields = ("order",)
+        fields = ("is_canceled",)

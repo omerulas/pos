@@ -71,5 +71,6 @@ export interface Order {
   is_open: boolean;
   items: Item[];
   amount: number;
-  tickets: Ticket[]
+  tickets: Ticket[];
+  is_printed: boolean;
 }

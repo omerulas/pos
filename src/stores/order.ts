@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useProcess } from "./process";
 import { useRoute } from "vue-router";
 import type { CartItem, Order } from "@/library/interface";
@@ -18,8 +18,8 @@ export const useOrderData = defineStore("Order", () => {
   const selectedCategoryId = ref<string>("");
   const cart = ref<CartItem[]>([]);
   const obj = ref<Order>({ ...initialOrder });
-  const canEnterOrder = ref(false)
-  const showOrderHistory = ref(false)
+  const canEnterOrder = ref(false);
+  const showOrderHistory = ref(false);
 
   // --- Computeds ---
   const tableId = computed(() => route.params.id);
@@ -46,13 +46,19 @@ export const useOrderData = defineStore("Order", () => {
   }
 
   async function getOrder() {
-    const response = await api.get(url({ path: `order/${tableId.value}` }));
+    const response = await api.get(
+      url({
+        path: `order`,
+        query: { tableId: tableId.value },
+      }),
+    );
+
     if (response.status == 200) {
       obj.value = response.data;
     }
   }
 
-  async function openOrder() {
+  async function checkIn() {
     if (obj.value.id !== "") return;
 
     const response = await api.post(urls.order, { table: tableId.value });
@@ -121,20 +127,53 @@ export const useOrderData = defineStore("Order", () => {
 
     if (response.status == 200) {
       obj.value = response.data;
-      cart.value = []
+      cart.value = [];
     }
   }
 
   async function cancelTicket(ticketId: string) {
-    const conf = window.confirm("Tüm istem iptal edilecek")
+    const conf = window.confirm("Tüm istem iptal edilecek");
 
-    if(conf){
-      console.log(ticketId)
-      const response = await api.delete(url({path: `ticket/${ticketId}`}))
+    if (conf) {
+      const response = await api.delete(
+        url({
+          path: "ticket",
+          query: {
+            ticketId: ticketId
+          }
+        }),
+      );
 
-      if(response.status == 200) {
-        obj.value = response.data
+      if (response.status == 200) {
+        obj.value = response.data;
       }
+    }
+  }
+
+  async function printOrder() {
+    const response = await api.delete(
+      url({
+        path: `order/${tableId.value}/print`,
+      }),
+    );
+
+    if (response.status == 200) {
+      obj.value = response.data;
+    }
+  }
+
+  async function checkOut() {
+    const response = await api.delete(
+      url({
+        path: "order",
+        query: {
+          tableId: tableId.value
+        }
+      }),
+    );
+
+    if (response.status == 200) {
+      reset();
     }
   }
 
@@ -156,13 +195,15 @@ export const useOrderData = defineStore("Order", () => {
     showOrderHistory,
     changeCategoryId,
     getOrder,
-    openOrder,
+    checkIn,
     addToCart,
     increaseQuantity,
     decreaseQuantity,
     removeItem,
     saveOrder,
     cancelTicket,
+    printOrder,
+    checkOut,
     reset,
   };
 });

@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <button :disabled="$order.obj.id == ''" class="actionButton">
+    <button @click="$order.checkOut" :disabled="$order.obj.id == '' || !$order.obj.is_open || $order.obj.tickets.length == 0" class="actionButton">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-clipboard-check"
             viewBox="0 0 16 16">
             <path fill-rule="evenodd"

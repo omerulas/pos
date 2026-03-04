@@ -31,4 +31,6 @@ export const initialOrder: Order = {
   is_open: false,
   items: [],
   amount: 0.0,
+  tickets: [],
+  is_printed: false,
 };
