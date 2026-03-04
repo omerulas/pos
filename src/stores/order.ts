@@ -135,14 +135,9 @@ export const useOrderData = defineStore("Order", () => {
     const conf = window.confirm("Tüm istem iptal edilecek");
 
     if (conf) {
-      const response = await api.delete(
-        url({
-          path: "ticket",
-          query: {
-            ticketId: ticketId
-          }
-        }),
-      );
+      const response = await api.patch(url({ path: "order" }), {
+        ticketId: ticketId,
+      });
 
       if (response.status == 200) {
         obj.value = response.data;
@@ -151,14 +146,15 @@ export const useOrderData = defineStore("Order", () => {
   }
 
   async function printOrder() {
-    const response = await api.delete(
+    const response = await api.head(
       url({
-        path: `order/${tableId.value}/print`,
+        path: "order",
+        query: { tableId: tableId.value },
       }),
     );
 
     if (response.status == 200) {
-      obj.value = response.data;
+      obj.value.is_printed = true;
     }
   }
 
@@ -167,8 +163,8 @@ export const useOrderData = defineStore("Order", () => {
       url({
         path: "order",
         query: {
-          tableId: tableId.value
-        }
+          tableId: tableId.value,
+        },
       }),
     );
 

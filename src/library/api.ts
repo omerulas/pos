@@ -5,11 +5,12 @@ import { DEBUG } from "./settings";
 import { useProcess } from "@/stores/process.ts";
 
 enum HttpMethods {
+  HEAD = "HEAD",
   GET = "GET",
   POST = "POST",
   PUT = "PUT",
-  DELETE = "DELETE",
-  HEAD = "HEAD",
+  PATCH = "PATCH",
+  DELETE = "DELETE"
 }
 
 // services/api.service.ts
@@ -208,6 +209,10 @@ class ApiService {
 
   public put<T = any>(url: string, body: any): Promise<ApResponse<T>> {
     return this.request<T>(HttpMethods.PUT, url, body);
+  }
+
+  public patch<T = any>(url: string, body: any): Promise<ApResponse<T>> {
+    return this.request<T>(HttpMethods.PATCH, url, body);
   }
 
   public delete<T = any>(url: string): Promise<ApResponse<T>> {

@@ -50,14 +50,56 @@ class SessionView(View):
 class OrderView(View):
     """
         Handle order process
-        GET     path(route="order", view=views.OrderView.as_view())
-        POST    path(route="order", view=views.OrderView.as_view())
-        PUT     path(route="order", view=views.OrderView.as_view())
-        DELETE  path(route="order", view=views.OrderView.as_view())
+        HEAD        path(route="order", view=views.OrderView.as_view())
+        GET         path(route="order", view=views.OrderView.as_view())
+        POST        path(route="order", view=views.OrderView.as_view())
+        PUT         path(route="order", view=views.OrderView.as_view())
+        PATCH       path(route="order", view=views.OrderView.as_view())
+        DELETE      path(route="order", view=views.OrderView.as_view())
     """
     
     def head(self, request):
-        pass
+        """
+        Yalnizca siparisin yazdirilmasi ve yazdirma durumuyla ilgili
+        islemleri yapar
+        """
+        table_id = request.GET.get('tableId', None)
+            
+        if not table_id:
+            return ApiResponse(message="Masa bilgisi bulunamadı", status=403)
+        
+        with transaction.atomic():
+            """
+            Aynı anda yapilan islemler olabileceginden dolayi
+            Veri butunlugu icin transaction atomik baslasin
+            """
+            # Masanın IDsi ve açık olma durumuyla filtrele
+            # Çoklu kayıt çekme ihtimaline karşı filtreleme sorgusu
+            order = models.Order.objects.filter(table_id=table_id, is_open=True)
+            
+            # Masaya bagli acik bir siparis bulunamazsa view sonlansın
+            if not order.exists():
+                return ApiResponse(message="Sipariş bulunamadı", status=404)
+            
+            # Masaya bagli acik bir siparis bulundugunda listenin en basindaki gunceldir
+            form = forms.PrintOrderReceiptForm(
+                instance=order.first(),
+                data={"is_printed": True}
+            )
+            
+            if form.is_valid():
+                """
+                Form validasyonunu gectiginde siparis verilerini ve mesaji doner
+                """
+                order = form.save()
+                return ApiResponse(
+                    data=order.serialize(),
+                    message="Fiş yazdırıldı"
+                )
+            
+            # Validasyonu gecemezse ilk form hatasini doner
+            error = service.get_first_error_message(form)
+            return ApiResponse(message=error, status=400)
     
     def get(self, request):
         """
@@ -150,7 +192,53 @@ class OrderView(View):
             return ApiResponse(message=str(error), status=500)
         
     def patch(self, request):
-        pass
+        """
+        Yalnizca siparise ait bir istemin iptal islemini
+        gerceklestirir
+        """
+        try:
+            data = json.loads(request.body)
+            ticket_id = data.get('ticketId', None)
+                
+            if not ticket_id:
+                return ApiResponse(message="İstem bilgisi bulunamadı", status=403)
+            
+            with transaction.atomic():
+                """
+                Aynı anda yapilan islemler olabileceginden dolayi
+                Veri butunlugu icin transaction atomik baslasin
+                """
+                # ID unique fakat hata denetimi gereklidir
+                ticket = models.OrderTicket.objects.filter(id=ticket_id)
+                
+                # Olasi bir bulunmazlik durumunda view sonlansin
+                if not ticket.exists():
+                    return ApiResponse(message="İstem bulunamadı", status=404)
+                
+                # Bir ticket bulundugunda listenin en basindaki aynı zamanda tektir
+                form = forms.CancelOrderTicketForm(
+                    data={"is_canceled": True},
+                    instance=ticket.first()
+                )
+                
+                if form.is_valid():
+                    """
+                    Form validasyonunu gectiginde siparis verilerini ve mesaji doner
+                    """
+                    ticket = form.save()
+                    return ApiResponse(
+                        data=ticket.order.serialize(),
+                        message="Sipariş istemi iptal edildi"
+                    )
+                
+                # Validasyonu gecemezse ilk form hatasini doner
+                error = service.get_first_error_message(form)
+                return ApiResponse(message=error)
+            
+        except json.JSONDecodeError:
+            return ApiResponse(message="Geçersiz format", status=400)
+        except Exception as error:
+            return ApiResponse(message=str(error), status=500)
     
     def delete(self, request):
         """
