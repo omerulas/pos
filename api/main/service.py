@@ -16,9 +16,6 @@ class Service:
     def data(self, request: HttpRequest):
         return json.loads(request.body.decode('utf-8'))
     
-    def check(self, request:HttpRequest):
-        return {"is_authenticated": request.user.is_authenticated}
-    
     def login(self, request: HttpRequest):
         data = self.data(request=request)
         form = AuthenticationForm(data=data)

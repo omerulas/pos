@@ -84,10 +84,16 @@ class Store(AppBaseModel):
         }
     
 class UserStore(AppBaseModel):
+    
+    class DisplayType(models.TextChoices):
+        wds = ('wds', 'WDS')
+        kds = ('kds', 'KDS')
+        mds = ('mds', 'mds')
+    
     user = models.OneToOneField(
         to=User,
         on_delete=models.CASCADE,
-        related_name='user_store'
+        related_name='access'
     )
 
     store = models.ForeignKey(
@@ -95,6 +101,13 @@ class UserStore(AppBaseModel):
         on_delete=models.CASCADE,
         related_name='users',
         db_index=True
+    )
+    
+    display = models.CharField(
+        verbose_name="Görüntüleme",
+        max_length=3,
+        choices=DisplayType.choices,
+        default=DisplayType.wds
     )
     
     class Meta:

@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.db import transaction
+from django.contrib import auth
+from django.contrib.auth.forms import AuthenticationForm
 from main.service import service, ApiResponse
 from main import forms, models
 
@@ -28,20 +30,64 @@ class SessionView(View):
         
     def get(self, request):
         """Check auth"""
-        response = service.check(request)
-        user = request.user
-        if user.is_authenticated and user.user_store:
-            store = user.user_store.store
-            response.update({"store": store.serialize()})
-        return ApiResponse(data=response)
+        if request.user.is_authenticated:
+            """
+            Eger kullanici oturum acmissa kullanici
+            magaza iliskisini kontrol etsin
+            """
+            try:
+                relation = request.user.access
+                return ApiResponse(
+                    data={
+                        "is_authenticated": True,
+                        "store": relation.store.serialize()
+                    }
+                )
+            except AttributeError:
+                # Eger kullanici magaza eslesmesi yapilmamissa
+                return ApiResponse(
+                    message="Kullanıcının uygulama yetkisi yoktur",
+                    status=412
+                )
+        
+        return ApiResponse(status=401)
     
     def post(self, request):
         """Log in"""
-        response = service.login(request)
-        error = response.get("error", None)
-        if error is not None:
+        try:
+            data = json.loads(request.body) # Credentials
+            
+            form = AuthenticationForm(data=data)
+            if form.is_valid():
+                """
+                Eger form gecerliyse: kullanici adi ve
+                sifresi dogruysa oturum açsın ancak
+                kullanici magaza iliskisini kontrol etsin
+                """
+                user = form.get_user()
+                auth.login(request=request, user=user)
+                
+                # Kullanicinin magazasini getirmeyi denesin
+                try:
+                    relation = request.user.access
+                    return ApiResponse(
+                        data={
+                            "is_authenticated": True,
+                            "store": relation.store.serialize()
+                        }
+                    )
+                except AttributeError:
+                    # Eger kullanici magaza eslesmesi yapilmamissa
+                    return ApiResponse(
+                        message="Kullanıcının uygulama yetkisi yoktur",
+                        status=412
+                    )
+            
+            # Gonderilen credentiallar yanlis ise
+            error = "Kullanıcı adı veya şifre yanlış"
             return ApiResponse(message=error, status=401)
-        return ApiResponse(data=response)
+        except json.JSONDecodeError:
+            return ApiResponse(message="Geçersiz format", status=400)
     
     def delete(self, request):
         response = service.logout(request)

@@ -35,7 +35,7 @@ class StoreAdmin(admin.ModelAdmin):
 
 @admin.register(models.UserStore)
 class UserStoreAdmin(admin.ModelAdmin):
-    list_display = ("user", "store")
+    list_display = ("user", "store", "display")
 
 @admin.register(models.Table)
 class TableAdmin(admin.ModelAdmin):
